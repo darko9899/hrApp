@@ -2,14 +2,14 @@ package com.company.humanResources.model;
 
 import javax.persistence.*;
 
-@Entity
+@Entity(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false, updatable = false)
     private Integer id;
     private String username;
-    private String password;
+    private String pwd;
     private String firstName;
     private String lastName;
     private String email;
@@ -30,12 +30,12 @@ public class User {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPwd() {
+        return pwd;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPwd(String pwd) {
+        this.pwd = pwd;
     }
 
     public String getFirstName() {

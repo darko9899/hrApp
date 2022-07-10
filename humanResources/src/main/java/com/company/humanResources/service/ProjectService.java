@@ -6,6 +6,7 @@ import com.company.humanResources.repo.ProjectRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
 
 @Service
@@ -22,20 +23,36 @@ public class ProjectService {
     public Project addOrUpdateProject(NewProjectDTO newProjectDTO) {
         Project project = new Project();
         Long id = newProjectDTO.getId();
-        if(id == null) {
-            id = Long.valueOf((long) Math.random());;
+        if(id != null) {
+            project.setId(id);
         }
-        project.setId(id);
+
         project.setName(newProjectDTO.getName());
         Project savedProject = projectRepo.save(project);
-      
-        for(Long employeeId: newProjectDTO.getEmployeeIds()) {
-            Employee employee = employeeRepo.findEmployeeById(employeeId).get();
-            List<Project> projects = employee.getProjects();
-            projects.add(project);
-            employee.setProjects(projects);
-            employeeRepo.save(employee);
+
+        for (Employee employee : employeeRepo.findAll()) {
+            if (newProjectDTO.getEmployeeIds().contains(employee.getId())) {
+                List<Project> projects = employee.getProjects();
+                if (!projects.contains(project)){
+                    projects.add(project);
+                    employee.setProjects(projects);
+                    employeeRepo.save(employee);
+                }
+
+            } else {
+                List<Project> projects = employee.getProjects();
+                projects.remove(project);
+                employee.setProjects(projects);
+                employeeRepo.save(employee);
+            }
         }
+//        for(Long employeeId: newProjectDTO.getEmployeeIds()) {
+//            Employee employee = employeeRepo.findEmployeeById(employeeId).get();
+//            List<Project> projects = employee.getProjects();
+//            projects.add(project);
+//            employee.setProjects(projects);
+//            employeeRepo.save(employee);
+//        }
         return savedProject;
     }
 
@@ -60,10 +77,18 @@ public class ProjectService {
         return projectRepo.save(project);
     }
 
+    @Transactional
     public void deleteProject (Long id){
-//        Project project = projectRepo.getById(id);
-//        project.setEmployees(new ArrayList<>());
-//        projectRepo.save(project);
+        Project project = projectRepo.getById(id);
+        for(Employee employee: employeeRepo.findAll()) {
+            List<Project> projects = employee.getProjects();
+            if (projects.contains(project)) {
+                projects.remove(project);
+                employee.setProjects(projects);
+                employeeRepo.save(employee);
+            }
+        }
+        projectRepo.save(project);
         projectRepo.deleteProjectById(id);
     }
 }

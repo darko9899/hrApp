@@ -17,11 +17,14 @@ public class LoginService {
 
     public User login(String username, String password) {
         Optional<User> optionalUser = userRepo.findByUsername(username);
-        User user = optionalUser.get();
-        if (user.getPassword().equals(password)) {
-            return user;
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            if (user.getPwd().equals(password)) {
+                return user;
+            }
         }
-        throw new ValidationCredentialsExeption("Невалидно потребителско име или парола.");
+        return null;
+//        throw new ValidationCredentialsExeption("Невалидно потребителско име или парола.");
     }
 
 
